@@ -140,8 +140,8 @@ Each error is returned with an appropriate HTTP status code and a descriptive me
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/srihari-swain/ASR-Service.git
-   cd ASR-Service
+   git clone https://github.com/srihari-swain/automatic-speech-recognition-.git
+   cd automatic-speech-recognition
    ```
 
 2. Create a Python virtual environment:
