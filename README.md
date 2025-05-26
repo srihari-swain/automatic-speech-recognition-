@@ -182,7 +182,7 @@ python src/main.py
 curl -X POST "http://localhost:8000/transcribe" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@path/to/your/audio.wav"
+  -F "file=@/data/hi_audio.wav"
 ```
 
 ### Using Postman:
