@@ -15,7 +15,7 @@
 This project provides a robust FastAPI-based REST API for transcribing audio files to text. The system leverages ONNX Runtime for efficient speech recognition and is designed with clean architecture principles, separating concerns between audio handling, speech processing, and API endpoints.
 
 The service allows users to:
-- Upload audio files in various formats (.wav)
+- Upload audio files in (.wav) format only.
 - Receive accurate text transcriptions
 - Get confidence scores and processing metrics
 
@@ -45,26 +45,9 @@ This project uses an ONNX model for fast inference. If you have a `.nemo` model 
 
 ---
 
-## Why ONNX Model Inference is Not Fully Async
-
-While the FastAPI endpoints are async, ONNX Runtime and NumPy are CPU-bound and synchronous libraries. True async (non-blocking) inference would require ONNX Runtime to support `await` natively or for the model to run in a fully async event loop (which is not currently the case for most Python ML frameworks).
-
-### Technical Details:
-- **ONNXRuntime**: The Python API for ONNX Runtime is synchronous and releases the GIL only for heavy computation. It does not provide an `await`-able interface.
-- **NumPy/SoundFile**: Preprocessing steps (e.g., reading and resampling audio) are also synchronous and CPU-bound.
-- **Async in FastAPI**: To avoid blocking, the recommended pattern is to offload CPU-bound tasks to a thread pool or process pool using `run_in_executor`, allowing FastAPI to handle other requests concurrently.
-
-### Example (in code):
-```python
-import asyncio
-loop = asyncio.get_event_loop()
-result = await loop.run_in_executor(None, speech_recognizer.transcribe, audio_bytes)
-```
-
-### Summary:
-- The endpoint is async-compatible and will not block the FastAPI event loop.
-- The actual model inference and preprocessing are performed synchronously in a thread pool.
-- This is a standard pattern in Python for integrating synchronous ML libraries with async web frameworks.
+4. ⚠️ **ONNX Runtime and Async Behavior:**
+   -  ONNX Runtime’s Python API is synchronous and does not support await-based asynchronous execution.
+      While your FastAPI endpoint can be defined using async def, the ONNX model inference itself is CPU-bound and runs synchronously. To prevent blocking the event loop, use run_in_executor to offload inference to a separate thread.
 
 ## Project Structure
 
@@ -134,7 +117,7 @@ Each error is returned with an appropriate HTTP status code and a descriptive me
 
 - Python 3.10
 - pip (Python package installer)
-- Docker (optional, for containerized deployment)
+- Docker (optional, for containerized deployment). To install Docker, visit the official Docker installation guide: https://docs.docker.com/engine/install/.
 
 ### Setting Up the Environment
 
@@ -186,6 +169,12 @@ python src/main.py
    docker run -d -p 8000:8000 --name asr-service asr-service
    ```
 
+3. Run using docker compose file :
+   ```bash
+   docker compose up --build 
+   ```
+
+
 ## Testing the Endpoint
 
 ### Using curl:
@@ -234,7 +223,6 @@ The API documentation is available at:
    - Graceful degradation for model failures
 
 3. **Scalability**:
-   - Thread pool for parallel processing
    - Configurable maximum file size and duration
    - Lightweight container image using Python slim
 
